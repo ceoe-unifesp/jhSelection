@@ -9,7 +9,7 @@ A tibble with \strong{22 214 rows} and \strong{8 variables}:
 \describe{
 \item{state}{Two-digit state FIPS code (character).}
 \item{fips}{Five-digit county FIPS code (character).}
-\item{year}{Calendar year, 1985–2024 (numeric).}
+\item{year}{Calendar year, 1976–2025 (numeric).}
 \item{race}{Victim race (\code{factor}).}
 \item{sex}{Victim sex (\code{factor}).}
 \item{shr}{SHR count.}
@@ -19,7 +19,7 @@ A tibble with \strong{22 214 rows} and \strong{8 variables}:
 }
 \source{
 FBI Uniform Crime Reporting Program, \emph{Supplementary Homicide Reports},
-1985–2024, NACJD ICPSR 3795.
+1985–2025, NACJD ICPSR 3795.
 Burghart, D. B. (2024). \emph{Fatal Encounters}, v 1.4. Harvard Dataverse,
 \doi{10.7910/DVN/ZJF9IW}.
 Mapping Police Violence (2025 release), \url{https://mappingpoliceviolence.org/download}.

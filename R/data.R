@@ -10,7 +10,7 @@
 #' @format A tibble with **5 907 rows** and **7 variables**:
 #' \describe{
 #'   \item{state}{Two-digit state FIPS code (character).}
-#'   \item{year}{Calendar year, 1985–2024 (numeric).}
+#'   \item{year}{Calendar year, 1976–2025 (numeric).}
 #'   \item{race}{Victim race (`factor`): `"White"`, `"Black"`,
 #'     `"Hispanic/Latino"`, `"Asian/Pacific Islander"`,
 #'     `"Native American/Alaska Native"`, `"Unknown/Other"`.}
@@ -22,7 +22,7 @@
 #'
 #' @source
 #' FBI Uniform Crime Reporting Program, *Supplementary Homicide Reports*,
-#' 1985–2024, NACJD ICPSR 3795.
+#' 1985–2025, NACJD ICPSR 3795.
 #' Burghart, D. B. (2024). *Fatal Encounters*, v 1.4. Harvard Dataverse,
 #' \doi{10.7910/DVN/ZJF9IW}.
 #' Mapping Police Violence (2025 release), \url{https://mappingpoliceviolence.org/download}.
@@ -40,7 +40,7 @@
 #' \describe{
 #'   \item{state}{Two-digit state FIPS code (character).}
 #'   \item{fips}{Five-digit county FIPS code (character).}
-#'   \item{year}{Calendar year, 1985–2024 (numeric).}
+#'   \item{year}{Calendar year, 1976–2025 (numeric).}
 #'   \item{race}{Victim race (`factor`).}
 #'   \item{sex}{Victim sex (`factor`).}
 #'   \item{shr}{SHR count.}
@@ -59,17 +59,17 @@
 #' *Supplementary Homicide Reports* at the \emph{county × year × race × sex}
 #' level prior to any reconciliation with other sources.
 #'
-#' @format A tibble with **8 242 rows** and **6 variables**:
+#' @format A tibble with **9 705 rows** and **6 variables**:
 #' \describe{
 #'   \item{state}{Two-digit state FIPS code.}
 #'   \item{fips}{County FIPS code.}
-#'   \item{year}{Year, 1985–2024.}
+#'   \item{year}{Year, 1976–2023.}
 #'   \item{race}{Victim race (character).}
 #'   \item{sex}{Victim sex (character).}
 #'   \item{shr}{Count of events in SHR (integer).}
 #' }
 #'
-#' @source FBI UCR, *Supplementary Homicide Reports* 1976–2024.
+#' @source FBI UCR, *Supplementary Homicide Reports* 1976–2025.
 #' @keywords datasets
 "counts_shr"
 

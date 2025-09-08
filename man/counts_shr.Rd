@@ -5,18 +5,18 @@
 \alias{counts_shr}
 \title{SHR-only county counts of police-involved homicides}
 \format{
-A tibble with \strong{8 242 rows} and \strong{6 variables}:
+A tibble with \strong{9 705 rows} and \strong{6 variables}:
 \describe{
 \item{state}{Two-digit state FIPS code.}
 \item{fips}{County FIPS code.}
-\item{year}{Year, 1985–2024.}
+\item{year}{Year, 1976–2023.}
 \item{race}{Victim race (character).}
 \item{sex}{Victim sex (character).}
 \item{shr}{Count of events in SHR (integer).}
 }
 }
 \source{
-FBI UCR, \emph{Supplementary Homicide Reports} 1976–2024.
+FBI UCR, \emph{Supplementary Homicide Reports} 1976–2025.
 }
 \usage{
 counts_shr
