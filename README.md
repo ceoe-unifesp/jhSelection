@@ -218,7 +218,9 @@ If you use this replication package in your research, please cite:
   title        = {ceoe-unifesp/jhSelection: Replication Package for Selection Bias on Justifiable Homicide Reports},
   year         = 2025,
   publisher    = {GitHub},
-  url          = {https://github.com/ceoe-unifesp/jhSelection}
+  version      = {v1.0.0},
+  doi          = {WIP},
+  url          = {WIP}
 }
 ```
 
