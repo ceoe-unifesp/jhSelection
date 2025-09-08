@@ -20,7 +20,15 @@ piggyback::pb_download(
   overwrite = TRUE
 )
 
-# alternative: download older version of SHR, used when paper was written
+# alternative: download older version of SHR,
+# used when paper was written, for reproducibility
+piggyback::pb_download(
+  "shr.parquet",
+  dest = here::here("data-raw/parquet"),
+  repo = "ceoe-unifesp/jhSelection",
+  tag = "data",
+  overwrite = TRUE
+)
 
 # download FE data
 piggyback::pb_download(
