@@ -3,6 +3,7 @@ paths <- file.path("data-raw", c("parquet", "csv", "rda", "xlsx"))
 fs::dir_create(here::here(paths))
 
 # download LEAIC data
+# original data source: https://www.icpsr.umich.edu/web/ICPSR/studies/35158
 piggyback::pb_download(
   "35158-0001-Data.rda",
   dest = here::here("data-raw/rda"),
@@ -11,7 +12,7 @@ piggyback::pb_download(
   overwrite = TRUE
 )
 
-# download most recent version of SHR (from shrData package)
+# Download most recent version of SHR (from shrData package)
 piggyback::pb_download(
   "shr.parquet",
   dest = here::here("data-raw/parquet"),
@@ -20,7 +21,7 @@ piggyback::pb_download(
   overwrite = TRUE
 )
 
-# alternative: download older version of SHR,
+# Alternative: download older version of SHR,
 # used when paper was written, for reproducibility
 piggyback::pb_download(
   "shr.parquet",
@@ -31,6 +32,8 @@ piggyback::pb_download(
 )
 
 # download FE data
+# original data source: https://fatalencounters.org/
+# direct link: https://docs.google.com/spreadsheets/d/1dKmaV_JiWcG8XBoRgP8b4e9Eopkpgt7FL7nyspvzAsE/edit?usp=sharing
 piggyback::pb_download(
   "fatal_encounters.xlsx",
   dest = here::here("data-raw/xlsx"),
@@ -40,6 +43,9 @@ piggyback::pb_download(
 )
 
 # download MPV data
+# original data source: https://mappingpoliceviolence.org/
+# direct link: https://airtable.com/shroOenW19l1m3w0H
+# download date: 2025-05-01
 piggyback::pb_download(
   "Mapping Police Violence.csv",
   dest = here::here("data-raw/csv"),

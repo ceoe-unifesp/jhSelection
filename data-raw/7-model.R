@@ -40,8 +40,9 @@ models_state_nounk_inter <- purrr::map(c("fe", "mpv"), \(x) {
 tab01 <- c(models_fips_nounk_nointer, models_state_nounk_nointer) |>
   fixest::etable()
 
+print(tab01)
+
 tab02 <- c(models_fips_nounk_inter, models_state_nounk_inter) |>
   fixest::etable()
 
-print(tab01)
 print(tab02)
