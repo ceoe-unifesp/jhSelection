@@ -9,7 +9,12 @@ Authors@R: c(
     person("John", "Donohue", role = c("aut")),
     person("CEOE-Unifesp", role = c("cph", "fnd"))
     )
-Description: What the package does (one paragraph).
+Description: Replication package for "Selection Bias on Justifiable
+    Homicide Reports". This package provides datasets and functions to 
+    reproduce the analysis examining the association between race and gender and 
+    justifiable homicides data from the Supplementary Homicides Reports (SHR). 
+    Includes state and fips-level data from 1976-2023, regression and 
+    modeling functions.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
