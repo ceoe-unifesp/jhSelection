@@ -2,7 +2,8 @@
 # Selection Bias on Justifiable Homicide Reports: Replication Package
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml)[![DOI](https://zenodo.org/badge/1052969485.svg)](https://doi.org/10.5281/zenodo.17081221)
+
 <!-- badges: end -->
 
 ## Overview
@@ -219,8 +220,8 @@ If you use this replication package in your research, please cite:
   year         = 2025,
   publisher    = {GitHub},
   version      = {v1.0.0},
-  doi          = {WIP},
-  url          = {WIP}
+  doi          = {https://doi.org/10.5281/zenodo.17081221},
+  url          = {https://zenodo.org/records/17081222}
 }
 ```
 
