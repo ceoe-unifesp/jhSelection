@@ -225,6 +225,10 @@ ggplot2::ggsave(
   height = 9
 )
 
+da_model_fips |>
+  dplyr::filter(!is.na(shr)) |>
+  with(sum(shr))
+
 dist_sex_year <- da_model_fips |>
   tidyr::pivot_longer(
     cols = dplyr::matches("shr|fe|mpv"),
@@ -338,4 +342,195 @@ ggplot2::ggsave(
   bg = "white",
   width = 8,
   height = 6
+)
+
+# MAPS ------------------------
+
+da_model_fips
+
+counties_sf <- tigris::counties(cb = TRUE, year = 2023) |>
+  dplyr::filter(!STUSPS %in% c("AK", "HI", "PR", "GU", "VI", "AS", "MP"))
+
+states_sf <- tigris::states(cb = TRUE, year = 2023) |>
+  dplyr::filter(!STUSPS %in% c("AK", "HI", "PR", "GU", "VI", "AS", "MP"))
+
+da_prop_black_compare <- da_model_fips |>
+  dplyr::group_by(fips, race) |>
+  dplyr::summarise(
+    shr = sum(shr, na.rm = TRUE),
+    fe = sum(fe, na.rm = TRUE),
+    mpv = sum(mpv, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  dplyr::group_by(fips) |>
+  dplyr::summarise(
+    prop_shr = sum(shr[race == "Hispanic"], na.rm = TRUE) /
+      sum(shr, na.rm = TRUE),
+    n_shr = sum(shr, na.rm = TRUE),
+    prop_fe = sum(fe[race == "Hispanic"], na.rm = TRUE) / sum(fe, na.rm = TRUE),
+    n_fe = sum(fe, na.rm = TRUE),
+    prop_mpv = sum(mpv[race == "Hispanic"], na.rm = TRUE) /
+      sum(mpv, na.rm = TRUE),
+    n_mpv = sum(mpv, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    diff_fe_shr = prop_shr - prop_fe,
+    diff_mpv_shr = prop_shr - prop_mpv
+  ) |>
+  tidyr::pivot_longer(
+    c(diff_fe_shr, diff_mpv_shr),
+    names_to = "comparison",
+    values_to = "prop_diff"
+  ) |>
+  dplyr::filter(!is.nan(prop_diff))
+
+counties_sf |>
+  dplyr::inner_join(da_prop_black_compare, by = c("GEOID" = "fips")) |>
+  dplyr::mutate(
+    comparison = dplyr::case_match(
+      comparison,
+      "diff_fe_shr" ~ "SHR vs. Fatal Encounters",
+      "diff_mpv_shr" ~ "SHR vs. Mapping Police Violence"
+    )
+  ) |>
+  dplyr::mutate(
+    diff_cat = cut(
+      prop_diff,
+      c(-1.1, -0.5, -0.05, 0.05, 0.5, 1.1),
+      labels = c(
+        "Large Underreporting (< -50%)",
+        "Underreporting (-50% to -5%)",
+        "Near parity (-5% to 5%)",
+        "Overreporting (5%  to 50%)",
+        "Large Overreporting (> 50%)"
+      )
+    )
+  ) |>
+  ggplot2::ggplot(ggplot2::aes(fill = diff_cat)) +
+  # only mainland US counties
+  ggplot2::geom_sf(
+    data = counties_sf,
+    colour = 'transparent',
+    fill = 'white'
+  ) +
+  ggplot2::geom_sf(
+    data = states_sf,
+    colour = 'black',
+    fill = 'transparent'
+  ) +
+  ggplot2::geom_sf(color = NA) +
+  ggplot2::scale_fill_brewer(type = "div", palette = 5) +
+  ggplot2::facet_wrap(~comparison, ncol = 1) +
+  ggplot2::labs(
+    title = "Geographic Disparities in Reporting of Hispanic Victims",
+    fill = "Difference in Proportion",
+    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence."
+  ) +
+  theme_pub() +
+  ggplot2::theme(
+    axis.text = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    legend.direction = "vertical",
+    legend.position = "right"
+  )
+
+ggplot2::ggsave(
+  "data-raw/png/map_hispanic_reporting_disparities.png",
+  dpi = 300,
+  bg = "white",
+  width = 8,
+  height = 8
+)
+
+
+da_prop_female_compare <- da_model_fips |>
+  dplyr::group_by(fips, sex) |>
+  dplyr::summarise(
+    shr = sum(shr, na.rm = TRUE),
+    fe = sum(fe, na.rm = TRUE),
+    mpv = sum(mpv, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  dplyr::group_by(fips) |>
+  dplyr::summarise(
+    prop_shr = sum(shr[sex == "Female"], na.rm = TRUE) /
+      sum(shr, na.rm = TRUE),
+    n_shr = sum(shr, na.rm = TRUE),
+    prop_fe = sum(fe[sex == "Female"], na.rm = TRUE) / sum(fe, na.rm = TRUE),
+    n_fe = sum(fe, na.rm = TRUE),
+    prop_mpv = sum(mpv[sex == "Female"], na.rm = TRUE) /
+      sum(mpv, na.rm = TRUE),
+    n_mpv = sum(mpv, na.rm = TRUE),
+    .groups = "drop"
+  ) |>
+  dplyr::mutate(
+    diff_fe_shr = prop_shr - prop_fe,
+    diff_mpv_shr = prop_shr - prop_mpv
+  ) |>
+  tidyr::pivot_longer(
+    c(diff_fe_shr, diff_mpv_shr),
+    names_to = "comparison",
+    values_to = "prop_diff"
+  ) |>
+  dplyr::filter(!is.nan(prop_diff))
+
+counties_sf |>
+  dplyr::inner_join(da_prop_female_compare, by = c("GEOID" = "fips")) |>
+  dplyr::mutate(
+    comparison = dplyr::case_match(
+      comparison,
+      "diff_fe_shr" ~ "SHR vs. Fatal Encounters",
+      "diff_mpv_shr" ~ "SHR vs. Mapping Police Violence"
+    )
+  ) |>
+  dplyr::mutate(
+    diff_cat = cut(
+      prop_diff,
+      c(-1.1, -0.5, -0.05, 0.05, 0.5, 1.1),
+      labels = c(
+        "Large Underreporting (< -50%)",
+        "Underreporting (-50% to -5%)",
+        "Near parity (-5% to 5%)",
+        "Overreporting (5%  to 50%)",
+        "Large Overreporting (> 50%)"
+      )
+    )
+  ) |>
+  ggplot2::ggplot(ggplot2::aes(fill = diff_cat)) +
+  # only mainland US counties
+  ggplot2::geom_sf(
+    data = counties_sf,
+    colour = 'transparent',
+    fill = 'white'
+  ) +
+  ggplot2::geom_sf(
+    data = states_sf,
+    colour = 'black',
+    fill = 'transparent'
+  ) +
+  ggplot2::geom_sf(color = 'transparent') +
+  ggplot2::scale_fill_brewer(type = "div", palette = 4) +
+  ggplot2::facet_wrap(~comparison, ncol = 1) +
+  ggplot2::labs(
+    title = "Geographic Disparities in Reporting of Female Victims",
+    fill = "Difference in Proportion",
+    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence."
+  ) +
+  theme_pub() +
+  ggplot2::theme(
+    axis.text = ggplot2::element_blank(),
+    axis.ticks = ggplot2::element_blank(),
+    panel.grid = ggplot2::element_blank(),
+    legend.direction = "vertical",
+    legend.position = "right"
+  )
+
+ggplot2::ggsave(
+  "data-raw/png/map_female_reporting_disparities.png",
+  dpi = 300,
+  bg = "white",
+  width = 8,
+  height = 8
 )
