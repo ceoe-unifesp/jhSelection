@@ -27,13 +27,8 @@ fit_model <- function(
   remove_unknown = TRUE,
   interaction = FALSE
 ) {
-  yr_offset <- years_available()[[offset_var]]
-  yr_shr <- years_available()[["shr"]]
   da_model_prep <- da_model |>
-    dplyr::filter(
-      year >= max(yr_offset[1], yr_shr[1]),
-      year <= min(yr_offset[2], yr_shr[2])
-    ) |>
+    dplyr::filter(year >= 2013, year <= 2021) |>
     dplyr::mutate(
       ofs = .data[[offset_var]],
       # offset can't be zero
@@ -43,6 +38,7 @@ fit_model <- function(
     dplyr::filter(
       shr > 0 | ofs > 0
     ) |>
+    dplyr::select(-c(fe, mpv)) |>
     tidyr::drop_na()
   if (remove_unknown) {
     da_model_prep <- da_model_prep |>
@@ -63,21 +59,28 @@ fit_model <- function(
     }
     fm_vcov <- ~ year + state
   }
-  if (type %in% c("fips")) {
-    model <- fixest::feglm(
-      fml = fm,
-      data = da_model_prep,
-      offset = ~ log(ofs),
-      family = "poisson",
-      vcov = fm_vcov
-    )
+  model_poisson <- fixest::feglm(
+    fml = fm,
+    data = da_model_prep,
+    offset = ~ log(ofs),
+    family = "poisson",
+    vcov = fm_vcov
+  )
+  model_negbin <- fixest::fenegbin(
+    fml = fm,
+    data = da_model_prep,
+    offset = ~ log(ofs),
+    vcov = fm_vcov
+  )
+  bic_poisson <- BIC(model_poisson)
+  bic_negbin <- BIC(model_negbin)
+  usethis::ui_info(
+    "Comparing BIC: Poisson = {round(bic_poisson, 2)}, Negative Binomial = {round(bic_negbin, 2)}"
+  )
+  if (bic_poisson < bic_negbin) {
+    model <- model_poisson
   } else {
-    model <- fixest::fenegbin(
-      fml = fm,
-      data = da_model_prep,
-      offset = ~ log(ofs),
-      vcov = fm_vcov
-    )
+    model <- model_negbin
   }
   return(model)
 }
