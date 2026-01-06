@@ -1,6 +1,6 @@
 Package: jhSelection
 Title: Replication Package for Selection Bias on Justifiable Homicide Reports
-Version: 1.1.0
+Version: 1.1.1
 Authors@R: c(
     person("Ivan", "Ribeiro", , "iribeiro@unifesp.br", role = "aut",
            comment = c(ORCID = "0000-0003-4706-7408")),
