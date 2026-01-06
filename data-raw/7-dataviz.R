@@ -1,14 +1,132 @@
 devtools::load_all()
 
+usethis::ui_info("Table 1 stats...")
+
+da_model_fips |>
+  dplyr::filter(is.na(fips))
+
+# fips and state counts
+length(unique(na.omit(da_model_fips$fips)))
+length(unique(na.omit(da_model_fips$state)))
+
+# white male proportion
+sum(da_model_fips$race == "White")
+mean(da_model_fips$race == "White")
+sum(da_model_fips$sex == "Male")
+mean(da_model_fips$sex == "Male")
+
+# tange
+range(da_model_fips$year[!is.na(da_model_fips$fe)])
+range(da_model_fips$year[!is.na(da_model_fips$mpv)])
+range(da_model_fips$year[!is.na(da_model_fips$shr)])
+
+# victim counts
+length(da_model_fips$fe[!is.na(da_model_fips$fe)])
+length(da_model_fips$mpv[!is.na(da_model_fips$mpv)])
+length(da_model_fips$shr[
+  !is.na(da_model_fips$shr) & da_model_fips$year <= 2023
+])
+
+# victim mean (inside the range)
+mean(da_model_fips$fe[da_model_fips$fe > 0], na.rm = TRUE)
+mean(da_model_fips$mpv[da_model_fips$mpv > 0], na.rm = TRUE)
+mean(
+  da_model_fips$shr[
+    da_model_fips$shr > 0 & da_model_fips$year <= 2023
+  ],
+  na.rm = TRUE
+)
+
+# victim range
+range(da_model_fips$fe[da_model_fips$fe > 0], na.rm = TRUE)
+range(da_model_fips$mpv[da_model_fips$mpv > 0], na.rm = TRUE)
+range(
+  da_model_fips$shr[
+    da_model_fips$shr > 0 & da_model_fips$year <= 2023
+  ],
+  na.rm = TRUE
+)
+
 usethis::ui_info("Data visualization...")
 
 source_colors <- c(
-  "SHR" = "#0072B2", # Azul
-  "Fatal Encounters" = "#D55E00", # Laranja Queimado
-  "Mapping Police Violence" = "#009E73" # Verde
+  "SHR" = "#0072B2", # Blue
+  "Fatal Encounters" = "#D55E00", # Orange
+  "Mapping Police Violence" = "#009E73" # Green
 )
 
+## VIZ BY YEAR
+
+aux_agg <- da_model_state |>
+  dplyr::group_by(year) |>
+  dplyr::summarise(
+    shr = sum(shr, na.rm = TRUE),
+    fe = sum(fe, na.rm = TRUE),
+    mpv = sum(mpv, na.rm = TRUE)
+  ) |>
+  tidyr::pivot_longer(
+    c(shr:mpv),
+    names_to = "source",
+    values_to = "count"
+  )
+
+yr_labels <- years_available() |>
+  purrr::map(tibble::enframe) |>
+  purrr::list_rbind(names_to = "source") |>
+  dplyr::rename(year = value) |>
+  dplyr::mutate(
+    year = dplyr::if_else(year == 2025, 2024, year),
+    hj = dplyr::if_else(name == 1, 1.1, -0.1)
+  ) |>
+  dplyr::inner_join(aux_agg, c("source", "year"))
+
+p_year_count <- aux_agg |>
+  dplyr::mutate(
+    source = dplyr::case_match(
+      source,
+      "shr" ~ "SHR",
+      "fe" ~ "Fatal Encounters",
+      "mpv" ~ "Mapping Police Violence"
+    )
+  ) |>
+  dplyr::filter(
+    year <= 2024,
+    count > 0
+  ) |>
+  ggplot2::ggplot() +
+  ggplot2::aes(x = year, y = count, colour = source, fill = source) +
+  ggplot2::geom_point() +
+  ggplot2::geom_smooth(alpha = .1) +
+  ggplot2::geom_text(ggplot2::aes(label = year, hjust = hj), data = yr_labels) +
+  ggplot2::theme(legend.position = "bottom") +
+  ggplot2::scale_fill_manual(values = source_colors) +
+  ggplot2::scale_colour_manual(values = source_colors) +
+  ggplot2::labs(
+    title = "Victim Count by Data Source",
+    subtitle = paste(
+      "Comparison of victim counts by year across SHR,",
+      "Fatal Encounters (FE), and Mapping Police Violence (MPV)",
+      sep = "\n"
+    ),
+    x = "Year",
+    y = NULL,
+    fill = "Data Source:",
+    colour = "Data Source:"
+  ) +
+  theme_pub()
+
+ggplot2::ggsave(
+  "data-raw/png/p_year_count.png",
+  p_year_count,
+  dpi = 300,
+  bg = "white",
+  width = 9,
+  height = 6
+)
+
+# DISTRIBUTION BY RACE AND SEX
 dist_race <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   tidyr::pivot_longer(
     cols = dplyr::matches("shr|fe|mpv"),
     names_to = "source",
@@ -45,14 +163,12 @@ p_race <- dist_race |>
   ggplot2::labs(
     title = "Racial Distribution of Victims by Data Source",
     subtitle = paste(
-      "Comparison of victim proportions by race across SHR,",
-      "Fatal Encounters (FE), and Mapping Police Violence (MPV).",
-      sep = "\n"
+      "Comparison of victim proportions by race across SHR, FE and MPV"
     ),
     x = "Proportion of Total Victims",
     y = NULL,
     fill = "Data Source:",
-    caption = "Note: Data periods vary by source."
+    caption = "Note: Data from 2013 to 2021."
   ) +
   theme_pub()
 
@@ -66,6 +182,7 @@ ggplot2::ggsave(
 )
 
 dist_race_unk <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   tidyr::pivot_longer(
     cols = dplyr::matches("shr|fe|mpv"),
     names_to = "source",
@@ -103,11 +220,11 @@ p_race_unk <- dist_race_unk |>
   ggplot2::scale_fill_manual(values = source_colors) +
   ggplot2::labs(
     title = "Racial Distribution of Victims by Data Source",
-    subtitle = "Comparison of victim proportions by race across SHR,\nFatal Encounters (FE), and Mapping Police Violence (MPV).",
+    subtitle = "Comparison of victim proportions by race across SHR, FE and MPV.",
     x = "Proportion of Total Victims",
     y = NULL,
     fill = "Data Source:",
-    caption = "Note: 'Unknown/Others' categories have been excluded. Data periods vary by source."
+    caption = "Note: 'Unknown/Others' categories have been excluded. Data from 2013 to 2021."
   ) +
   theme_pub()
 
@@ -121,6 +238,7 @@ ggplot2::ggsave(
 )
 
 dist_sex <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   tidyr::pivot_longer(
     cols = dplyr::matches("shr|fe|mpv"),
     names_to = "source",
@@ -157,7 +275,7 @@ plot_sex_dist <- dist_sex |>
     x = "Proportion of Total Victims",
     y = "Victim Sex",
     fill = "Data Source:",
-    caption = "Note: 'Unknown/Others' categories have been excluded."
+    caption = "Note: 'Unknown/Others' categories have been excluded. Data from 2013 to 2021."
   ) +
   theme_pub()
 
@@ -288,6 +406,7 @@ ggplot2::ggsave(
 )
 
 dist_race_sex <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   tidyr::pivot_longer(
     cols = dplyr::matches("shr|fe|mpv"),
     names_to = "source",
@@ -331,7 +450,7 @@ p_female <- dist_race_sex |>
     x = "Proportion of Female Victims",
     y = NULL,
     fill = "Data Source:",
-    caption = "Note: 'Unknown/Others' categories have been excluded."
+    caption = "Note: 'Unknown/Others' categories have been excluded. Data from 2013 to 2021."
   ) +
   theme_pub()
 
@@ -346,8 +465,6 @@ ggplot2::ggsave(
 
 # MAPS ------------------------
 
-da_model_fips
-
 counties_sf <- tigris::counties(cb = TRUE, year = 2023) |>
   dplyr::filter(!STUSPS %in% c("AK", "HI", "PR", "GU", "VI", "AS", "MP"))
 
@@ -355,6 +472,7 @@ states_sf <- tigris::states(cb = TRUE, year = 2023) |>
   dplyr::filter(!STUSPS %in% c("AK", "HI", "PR", "GU", "VI", "AS", "MP"))
 
 da_prop_black_compare <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   dplyr::group_by(fips, race) |>
   dplyr::summarise(
     shr = sum(shr, na.rm = TRUE),
@@ -385,7 +503,7 @@ da_prop_black_compare <- da_model_fips |>
   ) |>
   dplyr::filter(!is.nan(prop_diff))
 
-counties_sf |>
+p_map_race <- counties_sf |>
   dplyr::inner_join(da_prop_black_compare, by = c("GEOID" = "fips")) |>
   dplyr::mutate(
     comparison = dplyr::case_match(
@@ -397,13 +515,13 @@ counties_sf |>
   dplyr::mutate(
     diff_cat = cut(
       prop_diff,
-      c(-1.1, -0.5, -0.05, 0.05, 0.5, 1.1),
+      c(-1.1, -0.1, -0.01, 0.01, 0.1, 1.1),
       labels = c(
-        "Large Underreporting (< -50%)",
-        "Underreporting (-50% to -5%)",
-        "Near parity (-5% to 5%)",
-        "Overreporting (5%  to 50%)",
-        "Large Overreporting (> 50%)"
+        "Large Underreporting (< -10%)",
+        "Mild Underreporting (-10% to -1%)",
+        "Near parity (-1% to 1%)",
+        "Mild Overreporting (1%  to 10%)",
+        "Large Overreporting (> 10%)"
       )
     )
   ) |>
@@ -420,12 +538,20 @@ counties_sf |>
     fill = 'transparent'
   ) +
   ggplot2::geom_sf(color = NA) +
-  ggplot2::scale_fill_brewer(type = "div", palette = 5) +
+  ggplot2::scale_fill_manual(
+    values = c(
+      "Large Underreporting (< -10%)" = "#d73027",
+      "Mild Underreporting (-10% to -1%)" = "#fc8d59",
+      "Near parity (-1% to 1%)" = "#dddddd",
+      "Mild Overreporting (1%  to 10%)" = "#a4bfdb",
+      "Large Overreporting (> 10%)" = "#7575b4"
+    )
+  ) +
   ggplot2::facet_wrap(~comparison, ncol = 1) +
   ggplot2::labs(
     title = "Geographic Disparities in Reporting of Hispanic Victims",
     fill = "Difference in Proportion",
-    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence."
+    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence. Data from 2013 to 2021."
   ) +
   theme_pub() +
   ggplot2::theme(
@@ -436,8 +562,11 @@ counties_sf |>
     legend.position = "right"
   )
 
+p_map_race
+
 ggplot2::ggsave(
   "data-raw/png/map_hispanic_reporting_disparities.png",
+  p_map_race,
   dpi = 300,
   bg = "white",
   width = 8,
@@ -446,6 +575,7 @@ ggplot2::ggsave(
 
 
 da_prop_female_compare <- da_model_fips |>
+  dplyr::filter(dplyr::between(year, 2013, 2021)) |>
   dplyr::group_by(fips, sex) |>
   dplyr::summarise(
     shr = sum(shr, na.rm = TRUE),
@@ -474,9 +604,13 @@ da_prop_female_compare <- da_model_fips |>
     names_to = "comparison",
     values_to = "prop_diff"
   ) |>
-  dplyr::filter(!is.nan(prop_diff))
+  dplyr::filter(
+    !is.nan(prop_diff),
+    !is.na(prop_diff),
+    !is.infinite(prop_diff)
+  )
 
-counties_sf |>
+p_map_sex <- counties_sf |>
   dplyr::inner_join(da_prop_female_compare, by = c("GEOID" = "fips")) |>
   dplyr::mutate(
     comparison = dplyr::case_match(
@@ -488,13 +622,13 @@ counties_sf |>
   dplyr::mutate(
     diff_cat = cut(
       prop_diff,
-      c(-1.1, -0.5, -0.05, 0.05, 0.5, 1.1),
+      c(-1.1, -0.1, -0.01, 0.01, 0.1, 1.1),
       labels = c(
-        "Large Underreporting (< -50%)",
-        "Underreporting (-50% to -5%)",
-        "Near parity (-5% to 5%)",
-        "Overreporting (5%  to 50%)",
-        "Large Overreporting (> 50%)"
+        "Large Underreporting (< -10%)",
+        "Mild Underreporting (-10% to -1%)",
+        "Near parity (-1% to 1%)",
+        "Mild Overreporting (1%  to 10%)",
+        "Large Overreporting (> 10%)"
       )
     )
   ) |>
@@ -511,12 +645,20 @@ counties_sf |>
     fill = 'transparent'
   ) +
   ggplot2::geom_sf(color = 'transparent') +
-  ggplot2::scale_fill_brewer(type = "div", palette = 4) +
+  ggplot2::scale_fill_manual(
+    values = c(
+      "Large Underreporting (< -10%)" = "#d73027",
+      "Mild Underreporting (-10% to -1%)" = "#fc8d59",
+      "Near parity (-1% to 1%)" = "#dddddd",
+      "Mild Overreporting (1%  to 10%)" = "#a4bfdb",
+      "Large Overreporting (> 10%)" = "#7575b4"
+    )
+  ) +
   ggplot2::facet_wrap(~comparison, ncol = 1) +
   ggplot2::labs(
     title = "Geographic Disparities in Reporting of Female Victims",
     fill = "Difference in Proportion",
-    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence."
+    caption = "Data sources: SHR, Fatal Encounters, Mapping Police Violence. Data from 2013 to 2021."
   ) +
   theme_pub() +
   ggplot2::theme(
@@ -527,8 +669,11 @@ counties_sf |>
     legend.position = "right"
   )
 
+p_map_sex
+
 ggplot2::ggsave(
   "data-raw/png/map_female_reporting_disparities.png",
+  p_map_sex,
   dpi = 300,
   bg = "white",
   width = 8,
