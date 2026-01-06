@@ -1,1 +1,10 @@
-utils::globalVariables(c("year", ".data", "ofs", "shr", "race", "sex"))
+utils::globalVariables(c(
+  "year",
+  ".data",
+  "ofs",
+  "shr",
+  "race",
+  "sex",
+  "fe",
+  "mpv"
+))

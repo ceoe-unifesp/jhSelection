@@ -72,8 +72,8 @@ fit_model <- function(
     offset = ~ log(ofs),
     vcov = fm_vcov
   )
-  bic_poisson <- BIC(model_poisson)
-  bic_negbin <- BIC(model_negbin)
+  bic_poisson <- stats::BIC(model_poisson)
+  bic_negbin <- stats::BIC(model_negbin)
   usethis::ui_info(
     "Comparing BIC: Poisson = {round(bic_poisson, 2)}, Negative Binomial = {round(bic_negbin, 2)}"
   )

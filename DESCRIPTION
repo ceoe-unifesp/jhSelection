@@ -26,6 +26,7 @@ Imports:
     dplyr,
     fixest,
     ggplot2,
-    tidyr
+    tidyr,
+    usethis
 URL: https://github.com/ceoe-unifesp/jhSelection
 BugReports: https://github.com/ceoe-unifesp/jhSelection/issues
