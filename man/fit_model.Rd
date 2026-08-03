@@ -10,38 +10,42 @@ fit_model(
   type = "fips",
   remove_unknown = TRUE,
   interaction = FALSE,
-  family = c("auto", "poisson", "negbin")
+  family = c("auto", "poisson", "negbin"),
+  cc = 0.5,
+  drop_bench_zero = FALSE
 )
 }
 \arguments{
-\item{da_model}{A data frame containing the data to be used for modeling.
-It should include columns for the counts of police-related deaths from different sources,
-as well as demographic and geographic variables.}
+\item{da_model}{Analysis data frame (see \code{\link[=prep_model_data]{prep_model_data()}}).}
 
-\item{offset_var}{A string specifying the name of the variable to be used as an offset in the model.
-Default is "fe" (Fatal Encounters counts).}
+\item{offset_var}{Benchmark used as the offset, \code{"fe"} (default) or \code{"mpv"}.}
 
-\item{type}{A string indicating the geographic level for fixed effects.
-Options are "fips" for county-level fixed effects or "state" for state-level fixed effects.
-Default is "fips".}
+\item{type}{Geographic fixed effects: \code{"fips"} (county, default), \code{"state"},
+or \code{"none"} (year effects only; used to show what the geographic fixed
+effects are doing).}
 
-\item{remove_unknown}{A logical value indicating whether to remove records with "Unknown/Others"
-Default is TRUE.}
+\item{remove_unknown}{Drop \code{"Unknown/Others"} cells. Default \code{TRUE}.}
 
-\item{interaction}{A logical value indicating whether to include interaction terms
-between sex and race. Default is FALSE.}
+\item{interaction}{If \code{TRUE}, estimate one coefficient per race-by-sex cell
+(subgroup reporting rates) instead of separate race and sex effects.
+Default \code{FALSE}.}
 
-\item{family}{A string selecting the count family. "auto" (default) picks
-Poisson or Negative Binomial by BIC, reproducing the published behaviour;
-"poisson" or "negbin" force the family, which is used by the revision's
-family x aggregation grid so that the family is not confounded with the level
-of geographic aggregation (see \verb{data-raw/revision/}).}
+\item{family}{Count family: \code{"auto"} (default) selects Poisson or Negative
+Binomial by BIC, reproducing the published tables; \code{"poisson"} or \code{"negbin"}
+force the family so it is not confounded with the level of geographic
+aggregation.}
+
+\item{cc, drop_bench_zero}{Passed to \code{\link[=prep_model_data]{prep_model_data()}} for the continuity-
+correction robustness checks.}
 }
 \value{
-A fitted model object from the \code{fixest} package.
+A fitted model object from the \code{fixest} package, with attributes
+\code{family_used} and \code{n_obs} (rows in the prepared sample).
 }
 \description{
-This function fits a Poisson or Negative Binomial regression model to estimate
-the relationship between police-related deaths recorded in different data sources,
-adjusting for demographic factors such as sex, race, and geographic location.
+Fits a Poisson or Negative Binomial regression estimating how the SHR count
+relates to a more complete benchmark (FE or MPV), with the benchmark as an
+offset and fixed effects for year and geography. The reported coefficients are
+log reporting ratios relative to White males; a negative value means the group
+is underreported in the SHR.
 }

@@ -111,6 +111,50 @@
 #' @keywords datasets
 "counts_fe"
 
+#' Fatal Encounters incident-level table (enriched)
+#'
+#' `fe_incidents` is the incident-level Fatal Encounters table produced by
+#' `data-raw/5-fe.R`, retaining the variables needed for the primary model and
+#' for the robustness checks. `counts_fe` is the aggregation of the firearm
+#' (`f_gunshot`) incidents with imputed race.
+#'
+#' @format A tibble with one row per FE incident matched to a county:
+#' \describe{
+#'   \item{unique_id}{Fatal Encounters incident id.}
+#'   \item{state, fips}{State and county FIPS codes (character).}
+#'   \item{year}{Year of death.}
+#'   \item{race_obs}{Race from the observed field only (imputed cases become
+#'     `"Unknown/Others"`).}
+#'   \item{race_imp}{Race allowing FE's imputed-race fallback (primary definition).}
+#'   \item{race_is_imputed}{`TRUE` if the race value came from imputation.}
+#'   \item{sex}{Victim sex.}
+#'   \item{f_gunshot}{`TRUE` if highest level of force is `"Gunshot"` (primary filter).}
+#'   \item{f_deadly}{`TRUE` if intended use of force is `"Deadly force"` (robustness filter).}
+#'   \item{armed}{`"Armed"`, `"Unarmed"`, or `"Unknown"`.}
+#' }
+#' @source Burghart, D. B. (2024). *Fatal Encounters*, v 1.4.
+#' @keywords datasets
+"fe_incidents"
+
+#' Mapping Police Violence incident-level table (enriched)
+#'
+#' `mpv_incidents` is the incident-level MPV table produced by `data-raw/4-mpv.R`
+#' for cells matched to a county via ORI, retaining the alleged-armed status used
+#' in the armed-versus-unarmed context descriptive (the SHR justifiable-homicide
+#' file carries no comparable flag).
+#'
+#' @format A tibble with one row per matched MPV incident:
+#' \describe{
+#'   \item{state, fips}{State and county FIPS codes (character).}
+#'   \item{year}{Year of death.}
+#'   \item{race}{Victim race.}
+#'   \item{sex}{Victim sex.}
+#'   \item{armed}{`"Armed"`, `"Unarmed"`, `"Vehicle"`, or `"Unknown"`.}
+#' }
+#' @source Mapping Police Violence, 2025 release.
+#' @keywords datasets
+"mpv_incidents"
+
 #' Law Enforcement Agency Identifiers Crosswalk (ORI and FIPS)
 #'
 #' `leaic_ori` is the Bureau of Justice Statistics LEAIC table linking
