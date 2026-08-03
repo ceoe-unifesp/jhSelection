@@ -1,0 +1,35 @@
+
+\begin{table}[htbp]
+   \caption{\label{tab:grid} Full family $\times$ geographic-FE $\times$ benchmark grid (main effects).}
+   \centering
+   \begin{tabular}{lcccccccc}
+      \tabularnewline \midrule \midrule
+      Dependent Variable: & \multicolumn{8}{c}{shr}\\
+      Model:          & (1)             & (2)             & (3)             & (4)             & (5)             & (6)             & (7)             & (8)\\  
+                      &  Poisson        & Poisson         & Neg. Bin.       & Neg. Bin.       & Poisson         & Poisson         & Neg. Bin.       & Neg. Bin.\\  
+      \midrule
+      \emph{Variables}\\
+      Black victim    & 0.0260          & -0.1090$^{**}$  & 0.0260          & -0.1090$^{**}$  & 0.2372$^{***}$  & 0.0889          & 0.2558$^{***}$  & 0.1080$^{*}$\\   
+                      & (0.0490)        & (0.0456)        & (0.0490)        & (0.0456)        & (0.0548)        & (0.0577)        & (0.0594)        & (0.0653)\\   
+      Hispanic victim & -0.1715         & -0.2834$^{***}$ & -0.1716         & -0.2835$^{***}$ & 0.0197          & -0.1195         & -0.0158         & -0.1486\\   
+                      & (0.1071)        & (0.0892)        & (0.1072)        & (0.0892)        & (0.1253)        & (0.1165)        & (0.1626)        & (0.1551)\\   
+      Female victim   & -0.2109$^{***}$ & -0.1976$^{***}$ & -0.2109$^{***}$ & -0.1976$^{***}$ & -0.2332$^{***}$ & -0.1889$^{***}$ & -0.2299$^{***}$ & -0.1811$^{***}$\\   
+                      & (0.0550)        & (0.0533)        & (0.0550)        & (0.0533)        & (0.0435)        & (0.0192)        & (0.0488)        & (0.0360)\\   
+      \midrule
+      \emph{Fixed-effects}\\
+      Year            & Yes             & Yes             & Yes             & Yes             & Yes             & Yes             & Yes             & Yes\\  
+      County          & Yes             & Yes             & Yes             & Yes             &                 &                 &                 & \\  
+      state           &                 &                 &                 &                 & Yes             & Yes             & Yes             & Yes\\  
+      \midrule
+      \emph{Fit statistics}\\
+      Observations    & 3,911           & 3,541           & 3,911           & 3,541           & 1,379           & 1,310           & 1,379           & 1,310\\  
+      BIC             & 11,940.2        & 11,282.6        & 11,940.2        & 11,282.6        & 4,259.6         & 4,199.3         & 4,237.8         & 4,187.8\\  
+      \midrule \midrule
+      \multicolumn{9}{l}{\emph{Signif. Codes: ***: 0.01, **: 0.05, *: 0.1}}\\
+   \end{tabular}
+   
+   \par \raggedright 
+   Same specification throughout; family and geographic fixed effects are set explicitly rather than chosen by BIC. Within each geographic level the family choice barely moves the coefficients; the sign change in the Black coefficient tracks the county-vs-state level, not the family.
+\end{table}
+
+

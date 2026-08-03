@@ -1,0 +1,5 @@
+ Benchmark Level    N Cells Units SHRmean SHRmax SHRzero Benchmean
+        FE  Fips 3911  6822  1812    0.50     26   71\\%      1.52
+       MPV  Fips 3541  5718  1526    0.60     26   66\\%      1.52
+        FE State 1379  1380    52    2.49     53   44\\%      7.43
+       MPV State 1310  1310    51    2.62     53   41\\%      6.51

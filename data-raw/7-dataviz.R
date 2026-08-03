@@ -101,6 +101,14 @@ p_year_count <- aux_agg |>
   ggplot2::theme(legend.position = "bottom") +
   ggplot2::scale_fill_manual(values = source_colors) +
   ggplot2::scale_colour_manual(values = source_colors) +
+  # REVISION JLEA-26-0003 (Task 13 / R1-2): start the y-axis at 0 with a 0 break
+  # so the SHR series (~350-480) no longer appears to sit below an implied zero
+  # line. The editor confirmed the SHR line is around 500, never negative.
+  ggplot2::scale_y_continuous(
+    limits = c(0, NA),
+    breaks = seq(0, 1500, 250),
+    expand = ggplot2::expansion(mult = c(0, 0.05))
+  ) +
   ggplot2::labs(
     title = "Victim Count by Data Source",
     subtitle = paste(

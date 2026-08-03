@@ -16,6 +16,11 @@
 #' Default is TRUE.
 #' @param interaction A logical value indicating whether to include interaction terms
 #' between sex and race. Default is FALSE.
+#' @param family A string selecting the count family. "auto" (default) picks
+#' Poisson or Negative Binomial by BIC, reproducing the published behaviour;
+#' "poisson" or "negbin" force the family, which is used by the revision's
+#' family x aggregation grid so that the family is not confounded with the level
+#' of geographic aggregation (see `data-raw/revision/`).
 #'
 #' @return A fitted model object from the `fixest` package.
 #'
@@ -25,8 +30,10 @@ fit_model <- function(
   offset_var = "fe",
   type = "fips",
   remove_unknown = TRUE,
-  interaction = FALSE
+  interaction = FALSE,
+  family = c("auto", "poisson", "negbin")
 ) {
+  family <- match.arg(family)
   da_model_prep <- da_model |>
     dplyr::filter(year >= 2013, year <= 2021) |>
     dplyr::mutate(
@@ -59,19 +66,28 @@ fit_model <- function(
     }
     fm_vcov <- ~ year + state
   }
-  model_poisson <- fixest::feglm(
-    fml = fm,
-    data = da_model_prep,
-    offset = ~ log(ofs),
-    family = "poisson",
-    vcov = fm_vcov
-  )
-  model_negbin <- fixest::fenegbin(
-    fml = fm,
-    data = da_model_prep,
-    offset = ~ log(ofs),
-    vcov = fm_vcov
-  )
+  fit_poisson <- function() {
+    fixest::feglm(
+      fml = fm, data = da_model_prep, offset = ~ log(ofs),
+      family = "poisson", vcov = fm_vcov
+    )
+  }
+  fit_negbin <- function() {
+    fixest::fenegbin(
+      fml = fm, data = da_model_prep, offset = ~ log(ofs), vcov = fm_vcov
+    )
+  }
+
+  if (family == "poisson") {
+    return(fit_poisson())
+  }
+  if (family == "negbin") {
+    return(fit_negbin())
+  }
+
+  # family == "auto": choose by BIC (reproduces the published behaviour)
+  model_poisson <- fit_poisson()
+  model_negbin <- fit_negbin()
   bic_poisson <- stats::BIC(model_poisson)
   bic_negbin <- stats::BIC(model_negbin)
   usethis::ui_info(

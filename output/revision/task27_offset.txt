@@ -1,0 +1,76 @@
+
+== fips / FE : SHR-only cells = 266 of 6822 (3.9%) ==
+# A tibble: 6 × 3
+  race     sex        n
+  <fct>    <fct>  <int>
+1 White    Male     148
+2 Black    Male      58
+3 Hispanic Male      32
+4 White    Female    19
+5 Black    Female     5
+6 Hispanic Female     4
+
+== fips / MPV : SHR-only cells = 350 of 5718 (6.1%) ==
+# A tibble: 6 × 3
+  race     sex        n
+  <fct>    <fct>  <int>
+1 White    Male     220
+2 Black    Male      58
+3 Hispanic Male      32
+4 White    Female    28
+5 Black    Female     6
+6 Hispanic Female     6
+
+== state / FE : SHR-only cells = 26 of 1380 (1.9%) ==
+# A tibble: 6 × 3
+  race     sex        n
+  <fct>    <fct>  <int>
+1 Hispanic Male       8
+2 White    Female     6
+3 White    Male       4
+4 Black    Male       4
+5 Black    Female     3
+6 Hispanic Female     1
+
+== state / MPV : SHR-only cells = 28 of 1310 (2.1%) ==
+# A tibble: 6 × 3
+  race     sex        n
+  <fct>    <fct>  <int>
+1 White    Female     7
+2 White    Male       6
+3 Hispanic Male       5
+4 Black    Male       4
+5 Black    Female     4
+6 Hispanic Female     2
+
+
+=== SENSITIVITY TO CONTINUITY CONSTANT cc (county, Poisson) ===
+
+-- benchmark FE --
+  cc=0.25  Black +0.0307(p0.564)  Hispanic -0.1743(p0.100)  Female -0.1897(p0.000)  [n=6822]
+  cc=0.50  Black +0.0260(p0.595)  Hispanic -0.1715(p0.109)  Female -0.2109(p0.000)  [n=6822]
+  cc=1.00  Black +0.0255(p0.569)  Hispanic -0.1643(p0.126)  Female -0.2477(p0.000)  [n=6822]
+
+-- benchmark MPV --
+  cc=0.25  Black -0.1183(p0.016)  Hispanic -0.2937(p0.001)  Female -0.1723(p0.001)  [n=5718]
+  cc=0.50  Black -0.1090(p0.017)  Hispanic -0.2834(p0.001)  Female -0.1976(p0.000)  [n=5718]
+  cc=1.00  Black -0.0935(p0.023)  Hispanic -0.2695(p0.002)  Female -0.2456(p0.000)  [n=5718]
+
+=== SENSITIVITY TO cc (state, NegBin) ===
+
+-- benchmark FE --
+  cc=0.25  Black +0.2562(p0.000)  Hispanic -0.0134(p0.934)  Female -0.2244(p0.000)  [n=1380]
+  cc=0.50  Black +0.2558(p0.000)  Hispanic -0.0158(p0.923)  Female -0.2299(p0.000)  [n=1380]
+  cc=1.00  Black +0.2552(p0.000)  Hispanic -0.0205(p0.900)  Female -0.2405(p0.000)  [n=1380]
+
+-- benchmark MPV --
+  cc=0.25  Black +0.1087(p0.098)  Hispanic -0.1470(p0.344)  Female -0.1711(p0.000)  [n=1310]
+  cc=0.50  Black +0.1080(p0.098)  Hispanic -0.1486(p0.338)  Female -0.1811(p0.000)  [n=1310]
+  cc=1.00  Black +0.1067(p0.099)  Hispanic -0.1519(p0.327)  Female -0.2001(p0.000)  [n=1310]
+
+
+=== DROP benchmark-zero cells (only cells with a positive benchmark) ===
+  fips   FE   poisson   keep-all: Black +0.0260(p0.595) Female -0.2109(p0.000) [n=6822] | drop-bench0: Black +0.0229(p0.563) Female -0.3375(p0.000) [n=6556]
+  fips   MPV  poisson   keep-all: Black -0.1090(p0.017) Female -0.1976(p0.000) [n=5718] | drop-bench0: Black -0.0726(p0.086) Female -0.3706(p0.000) [n=5368]
+  state  FE   negbin    keep-all: Black +0.2558(p0.000) Female -0.2299(p0.000) [n=1380] | drop-bench0: Black +0.2513(p0.000) Female -0.2925(p0.000) [n=1354]
+  state  MPV  negbin    keep-all: Black +0.1080(p0.098) Female -0.1811(p0.000) [n=1310] | drop-bench0: Black +0.0970(p0.118) Female -0.2558(p0.000) [n=1282]

@@ -9,7 +9,8 @@ fit_model(
   offset_var = "fe",
   type = "fips",
   remove_unknown = TRUE,
-  interaction = FALSE
+  interaction = FALSE,
+  family = c("auto", "poisson", "negbin")
 )
 }
 \arguments{
@@ -29,6 +30,12 @@ Default is TRUE.}
 
 \item{interaction}{A logical value indicating whether to include interaction terms
 between sex and race. Default is FALSE.}
+
+\item{family}{A string selecting the count family. "auto" (default) picks
+Poisson or Negative Binomial by BIC, reproducing the published behaviour;
+"poisson" or "negbin" force the family, which is used by the revision's
+family x aggregation grid so that the family is not confounded with the level
+of geographic aggregation (see \verb{data-raw/revision/}).}
 }
 \value{
 A fitted model object from the \code{fixest} package.
