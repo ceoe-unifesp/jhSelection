@@ -22,10 +22,12 @@ RoxygenNote: 7.3.3
 Depends: 
     R (>= 3.5)
 LazyData: true
-Imports: 
+Imports:
     dplyr,
     fixest,
+    forcats,
     ggplot2,
+    purrr,
     tidyr,
     usethis
 URL: https://github.com/ceoe-unifesp/jhSelection
