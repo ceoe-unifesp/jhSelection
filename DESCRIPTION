@@ -1,5 +1,5 @@
 Package: jhSelection
-Title: Replication Package for Selection Bias on Justifiable Homicide Reports
+Title: Replication Package for Race and Sex in the Underreporting of Police Justifiable Homicides
 Version: 1.2.0
 Authors@R: c(
     person("Ivan", "Ribeiro", , "iribeiro@unifesp.br", role = "aut",
