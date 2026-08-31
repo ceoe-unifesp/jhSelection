@@ -34,6 +34,22 @@ shr_pjh_circ <- shr_pjh |>
   ) |>
   dplyr::mutate(victims = 1 + victim_count)
 
+# Firearm share of justifiable POLICE homicides. SHR weapon codes 11-15 are
+# firearms (11 handgun, 12 rifle/other gun in the reported coding, 13 shotgun,
+# 14 other gun, 15 firearm type unknown). This share (about 99%) is the
+# justification for benchmarking against firearm ("Gunshot") deaths in FE/MPV.
+shr_firearm_share <- shr_pjh_circ |>
+  dplyr::filter(circ == "Police") |>
+  dplyr::summarise(
+    firearm = mean(stringr::str_sub(offender_01_weapon, 1, 2) %in%
+      c("11", "12", "13", "14", "15"), na.rm = TRUE)
+  ) |>
+  dplyr::pull(firearm)
+usethis::ui_info(
+  "SHR justifiable police homicides that involve a firearm: \\
+   {round(100 * shr_firearm_share, 1)}%"
+)
+
 # obs: for years 1976 -> 1979, we did not have data about ethnicity
 counts_shr <- shr_pjh_circ |>
   dplyr::inner_join(leaic_ori, by = c("ori_code" = "ori7")) |>

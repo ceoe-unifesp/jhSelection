@@ -1,5 +1,5 @@
 
-# Selection Bias on Justifiable Homicide Reports: Replication Package
+# Race and Sex in the Underreporting of Police Justifiable Homicides: Replication Package
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/ceoe-unifesp/jhSelection/actions/workflows/R-CMD-check.yaml)[![DOI](https://zenodo.org/badge/1052969485.svg)](https://doi.org/10.5281/zenodo.17081221)
@@ -8,7 +8,7 @@
 
 ## Overview
 
-This R package provides a complete replication package for the paper **"Selection Bias on Justifiable Homicide Reports"** by Julio Trecenti, Ivan Ribeiro, and John Donohue. The package examines the association between race and gender and justifiable homicides data from multiple sources, harmonizing three independent databases of police-involved fatalities in the United States.
+This R package provides a complete replication package for the paper **"Race and Sex in the Underreporting of Police Justifiable Homicides"** by Julio Trecenti, Ivan Ribeiro, and John Donohue (formerly circulated as "Selection Bias on Justifiable Homicide Reports"). The paper asks whether, among law-enforcement agencies that do report to the FBI's Supplementary Homicide Report (SHR), the incidents they omit are related to the victim's race and sex. It harmonizes three independent databases of police-involved fatalities in the United States (SHR, Fatal Encounters, and Mapping Police Violence) and estimates the demographic structure of underreporting with county and state fixed effects, together with the robustness checks and post-hoc analyses reported in the paper's appendices.
 
 ## How to replicate the analysis
 
@@ -152,22 +152,42 @@ This script:
 
 **Run with**: `source("data-raw/7-dataviz.R")`
 
-**Purpose**: Creates exploratory data visualizations.
+**Purpose**: Creates the figures used in the paper.
 
-This script generates plots to examine patterns in the data across sources, time periods, and demographic groups.
+This script generates: the victim count by data source over time (Figure 1, with the y-axis anchored at zero); the proportional distributions of victims by race and by sex across sources, and their trends over time; the county-level maps of female and Hispanic reporting disparities; and the per-observation victim-count distribution by source (the histogram that shows the SHR is zero in most observations while the benchmarks are not).
 
 ### Step 8: Regression Analysis (`data-raw/8-model.R`)
 
 **Run with**: `source("data-raw/8-model.R")`
 
-**Purpose**: Reproduces the main regression analysis from the paper.
+**Purpose**: Reproduces every model in the paper, the main tables and all of the
+robustness and post-hoc analyses in the appendices. Every model goes through a
+single `fit_model()` path (`R/model.R`); the Fatal Encounters robustness variants
+are rebuilt with `build_da()` (`R/tidy.R`) from the enriched incident table.
 
-This script:
+The script is organised in seven sections:
 
-- Fits regression models at both state and county levels
-- Tests models with and without interaction terms
-- Compares results across different data sources (FE vs MPV)
-- Generates regression tables using `fixest::etable()`
+1. **Main tables**: race and sex main effects, and race-by-sex subgroup reporting
+   rates, at county and state levels, against both benchmarks (paper Tables 3-4).
+2. **Family x aggregation x benchmark grid**: Poisson vs Negative Binomial crossed
+   with county/state and FE/MPV, showing the sign change tracks the aggregation
+   level, not the distributional family (Table 8).
+3. **Continuity-correction sensitivity**: coefficients for a correction of 0.25,
+   0.5, and 1.0, and for dropping the corrected observations (Table 9).
+4. **Extensive vs intensive margin decomposition**: splits the SHR-versus-benchmark
+   gap into agency non-participation and within-agency omission (about four-fifths
+   extensive; Table 7).
+5. **Fatal Encounters robustness**: the force filter (gunshot, deadly force, all
+   deaths) and observed vs imputed race (Table 10).
+6. **Role of the fixed effects (post-hoc)**: dropping the geographic fixed effects,
+   the share of observations in never-reporting counties absorbed by the fixed
+   effects, and female underreporting stratified by within-county reporting
+   intensity.
+7. **Estimation-sample descriptives and armed context**: the four regression
+   samples (Table 2, Panel B) and the share of MPV victims recorded as unarmed by
+   race (Table 6).
+
+Tables are printed with `fixest::etable()` and `tibble` summaries.
 
 ## Installation
 

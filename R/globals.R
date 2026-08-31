@@ -6,5 +6,8 @@ utils::globalVariables(c(
   "race",
   "sex",
   "fe",
-  "mpv"
+  "mpv",
+  "state",
+  "fips",
+  "bench_zero"
 ))
