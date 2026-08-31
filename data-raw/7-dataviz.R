@@ -687,3 +687,80 @@ ggplot2::ggsave(
   width = 8,
   height = 8
 )
+
+# PER-CELL COUNT HISTOGRAMS --------------------------------------------------
+# REVISION JLEA-26-0003 (R1/reviewer, descriptive request): before the models,
+# show the per-cell victim count distribution for each source (2013-2021, known
+# race & sex), INCLUDING the zeros. One facet per source; because the SHR sample
+# depends on the benchmark, its facet shows the two estimation samples side by
+# side (FE sample, MPV sample). Colour encodes the sample. The benchmarks put
+# their mass at 1+; the SHR piles at 0 (its zero share, 71% FE / 66% MPV,
+# matches Table 2 Panel B), a direct picture of the underreporting. Absolute
+# frequency, x truncated at 10 (counts run to 26-32).
+
+count_base_colors <- c("FE sample" = "#D55E00", "MPV sample" = "#009E73")
+
+count_cells <- da_model_fips |>
+  dplyr::filter(
+    dplyr::between(year, 2013, 2021),
+    race %in% c("Black", "Hispanic", "White"),
+    sex %in% c("Male", "Female")
+  ) |>
+  dplyr::mutate(
+    shr0 = dplyr::coalesce(as.integer(shr), 0L),
+    fe0 = dplyr::coalesce(as.integer(fe), 0L),
+    mpv0 = dplyr::coalesce(as.integer(mpv), 0L)
+  )
+
+count_fe_sample <- dplyr::filter(count_cells, shr0 > 0 | fe0 > 0)
+count_mpv_sample <- dplyr::filter(count_cells, shr0 > 0 | mpv0 > 0)
+
+count_mk <- function(df, count_col, panel, base) {
+  df |>
+    dplyr::transmute(count = .data[[count_col]], panel = panel, base = base)
+}
+
+count_hist <- dplyr::bind_rows(
+  count_mk(count_fe_sample, "fe0", "FE", "FE sample"),
+  count_mk(count_mpv_sample, "mpv0", "MPV", "MPV sample"),
+  count_mk(count_fe_sample, "shr0", "SHR", "FE sample"),
+  count_mk(count_mpv_sample, "shr0", "SHR", "MPV sample")
+) |>
+  dplyr::mutate(
+    panel = factor(panel, levels = c("FE", "MPV", "SHR")),
+    base = factor(base, levels = c("FE sample", "MPV sample"))
+  ) |>
+  dplyr::count(panel, base, count, name = "n")
+
+p_count_dist <- count_hist |>
+  ggplot2::ggplot(ggplot2::aes(x = count, y = n, fill = base)) +
+  ggplot2::geom_col(
+    position = ggplot2::position_dodge(width = 0.9), width = 0.85
+  ) +
+  ggplot2::facet_wrap(~panel, nrow = 1) +
+  ggplot2::coord_cartesian(xlim = c(-0.5, 10)) +
+  ggplot2::scale_x_continuous(breaks = seq(0, 10, 2)) +
+  ggplot2::scale_fill_manual(values = count_base_colors) +
+  ggplot2::labs(
+    title = "Victim Counts per Observation, by Data Source",
+    subtitle = paste(
+      "Number of observations with each victim count (2013-2021, known race and sex).",
+      "The SHR is zero in most observations; the benchmarks are not.",
+      sep = "\n"
+    ),
+    x = "Victims recorded",
+    y = "Number of observations",
+    fill = "Estimation sample",
+    caption = "Observations where the SHR or a benchmark records a victim. Counts run to 26-32; axis truncated at 10."
+  ) +
+  theme_pub() +
+  ggplot2::theme(legend.position = "bottom")
+
+ggplot2::ggsave(
+  "data-raw/png/p_count_dist.png",
+  p_count_dist,
+  dpi = 300,
+  bg = "white",
+  width = 11,
+  height = 4.6
+)
