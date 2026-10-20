@@ -7,11 +7,16 @@
 \format{
 A tibble with one row per matched MPV incident:
 \describe{
+\item{ori9}{Nine-character ORI of the agency responsible.}
 \item{state, fips}{State and county FIPS codes (character).}
 \item{year}{Year of death.}
 \item{race}{Victim race.}
 \item{sex}{Victim sex.}
 \item{armed}{\code{"Armed"}, \code{"Unarmed"}, \code{"Vehicle"}, or \code{"Unknown"}.}
+\item{charged}{\code{TRUE} if an officer was charged with a crime over the death.}
+\item{disposition}{Official disposition harmonized from MPV's free text:
+\code{"Charged"}, \code{"Justified"} (justified or cleared by a prosecutor, grand
+jury, or other reviewing body), \code{"Pending"}, or \code{"Unknown"}.}
 }
 }
 \source{

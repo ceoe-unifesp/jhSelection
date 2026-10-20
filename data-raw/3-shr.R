@@ -51,7 +51,7 @@ usethis::ui_info(
 )
 
 # obs: for years 1976 -> 1979, we did not have data about ethnicity
-counts_shr <- shr_pjh_circ |>
+shr_victims <- shr_pjh_circ |>
   dplyr::inner_join(leaic_ori, by = c("ori_code" = "ori7")) |>
   dplyr::filter(circ == "Police") |>
   tidyr::pivot_longer(
@@ -77,7 +77,9 @@ counts_shr <- shr_pjh_circ |>
       sex == "F" ~ "Female",
       .default = "Unknown/Others"
     )
-  ) |>
+  )
+
+counts_shr <- shr_victims |>
   dplyr::count(
     state,
     fips,
@@ -88,3 +90,19 @@ counts_shr <- shr_pjh_circ |>
   )
 
 usethis::use_data(counts_shr, overwrite = TRUE)
+
+# Same victims, keyed by the reporting agency (9-digit ORI) instead of the
+# county. Used for the agency fixed-effects check against MPV, which also
+# carries the agency identifier (Fatal Encounters does not).
+counts_shr_ori <- shr_victims |>
+  dplyr::count(
+    ori9,
+    state,
+    fips,
+    year = file_year,
+    race,
+    sex,
+    name = "shr"
+  )
+
+usethis::use_data(counts_shr_ori, overwrite = TRUE)

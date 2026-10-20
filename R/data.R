@@ -73,6 +73,27 @@
 #' @keywords datasets
 "counts_shr"
 
+#' SHR agency counts of police-involved homicides
+#'
+#' `counts_shr_ori` holds the same victims as [counts_shr], keyed by the
+#' reporting agency (nine-character ORI from the LEAIC crosswalk) rather than
+#' by county. It supports the agency fixed-effects check against Mapping Police
+#' Violence, which also records the agency identifier.
+#'
+#' @format A tibble with one row per agency, year, race, and sex:
+#' \describe{
+#'   \item{ori9}{Nine-character ORI of the reporting agency.}
+#'   \item{state, fips}{State and county FIPS codes.}
+#'   \item{year}{Year.}
+#'   \item{race}{Victim race (character).}
+#'   \item{sex}{Victim sex (character).}
+#'   \item{shr}{Count of victims in SHR (integer).}
+#' }
+#'
+#' @inherit counts_shr source
+#' @keywords datasets
+"counts_shr_ori"
+
 #' MPV-only county counts of police-related deaths
 #'
 #' `counts_mpv` contains raw tallies from the *Mapping Police Violence* project
@@ -145,11 +166,16 @@
 #'
 #' @format A tibble with one row per matched MPV incident:
 #' \describe{
+#'   \item{ori9}{Nine-character ORI of the agency responsible.}
 #'   \item{state, fips}{State and county FIPS codes (character).}
 #'   \item{year}{Year of death.}
 #'   \item{race}{Victim race.}
 #'   \item{sex}{Victim sex.}
 #'   \item{armed}{`"Armed"`, `"Unarmed"`, `"Vehicle"`, or `"Unknown"`.}
+#'   \item{charged}{`TRUE` if an officer was charged with a crime over the death.}
+#'   \item{disposition}{Official disposition harmonized from MPV's free text:
+#'     `"Charged"`, `"Justified"` (justified or cleared by a prosecutor, grand
+#'     jury, or other reviewing body), `"Pending"`, or `"Unknown"`.}
 #' }
 #' @source Mapping Police Violence, 2025 release.
 #' @keywords datasets

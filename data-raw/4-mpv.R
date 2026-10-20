@@ -32,6 +32,21 @@ mpv_clean <- mpv |>
       allegedly_armed %in% c("Unarmed", "Unarmed/Did Not Have Actual Weapon") ~ "Unarmed",
       allegedly_armed == "Vehicle" ~ "Vehicle",
       .default = "Unknown"
+    ),
+    # officer charged with a crime over the death (any outcome); missing and
+    # "No known charges" count as not charged, traffic tickets are not charges
+    charged = !is.na(officer_charged) &
+      !stringr::str_detect(stringr::str_to_lower(officer_charged),
+                           "^no known charges|^officer deceased|^received a ticket"),
+    # official disposition of the death, harmonized from MPV's free-text field
+    disposition = dplyr::case_when(
+      charged | stringr::str_detect(stringr::str_to_lower(disposition_official),
+                                    "(^|[^n])charged") ~ "Charged",
+      stringr::str_detect(stringr::str_to_lower(disposition_official),
+                          "justified|cleared|no bill|excusable|declined") ~ "Justified",
+      stringr::str_detect(stringr::str_to_lower(disposition_official),
+                          "pending|under investigation") ~ "Pending",
+      .default = "Unknown"
     )
   )
 
@@ -48,7 +63,8 @@ usethis::ui_info(
 
 # enriched incident-level table (keeps armed status) for the context descriptive
 mpv_incidents <- mpv_joined |>
-  dplyr::transmute(state = state.y, fips, year, race, sex, armed)
+  dplyr::transmute(ori9 = ori, state = state.y, fips, year, race, sex, armed,
+                   charged, disposition)
 
 usethis::use_data(mpv_incidents, overwrite = TRUE)
 
