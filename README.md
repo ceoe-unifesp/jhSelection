@@ -117,7 +117,7 @@ This script:
 - Focuses on police justifiable homicides (circumstance 81)
 - Harmonizes race and ethnicity categories
 - Creates county-level counts by year, race, and sex
-- Produces the `counts_shr` dataset (county level) and `counts_shr_ori` (the same victims keyed by the reporting agency)
+- Produces the `counts_shr` dataset
 
 ### Step 4: MPV Data Processing (`data-raw/4-mpv.R`)
 
@@ -192,9 +192,7 @@ The script is organised in eight sections:
    zeros that fall in county-years where the SHR records nobody; incident context
    by race and by sex in MPV (unarmed, officer charged, officially ruled
    justified; Table 6); demographic shares by source in the periods where the
-   sources overlap; coefficients by sub-period and without 2021 (Table 12); and
-   the MPV models with agency instead of county fixed effects (Table 11), which
-   use `counts_shr_ori` and the agency identifier in `mpv_incidents`.
+   sources overlap; and coefficients by sub-period and without 2021 (Table 11).
 
 Tables are printed with `fixest::etable()` and `tibble` summaries.
 

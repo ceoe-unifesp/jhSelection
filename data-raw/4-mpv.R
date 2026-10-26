@@ -63,8 +63,8 @@ usethis::ui_info(
 
 # enriched incident-level table (keeps armed status) for the context descriptive
 mpv_incidents <- mpv_joined |>
-  dplyr::transmute(ori9 = ori, state = state.y, fips, year, race, sex, armed,
-                   charged, disposition)
+  dplyr::transmute(state = state.y, fips, year, race, sex, armed, charged,
+                   disposition)
 
 usethis::use_data(mpv_incidents, overwrite = TRUE)
 

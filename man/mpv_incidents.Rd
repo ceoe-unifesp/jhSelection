@@ -7,7 +7,6 @@
 \format{
 A tibble with one row per matched MPV incident:
 \describe{
-\item{ori9}{Nine-character ORI of the agency responsible.}
 \item{state, fips}{State and county FIPS codes (character).}
 \item{year}{Year of death.}
 \item{race}{Victim race.}

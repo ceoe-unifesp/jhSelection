@@ -12,7 +12,7 @@ devtools::load_all()
 #   Section 7  Estimation-sample descriptives and armed-vs-unarmed context
 #   Section 8  Second-round additions: descriptives over the common window,
 #              SHR zeros in silent county-years, incident context by race and
-#              sex, sub-period and 2021 checks, agency fixed effects (MPV)
+#              sex, sub-period and 2021 checks
 #
 # Every model goes through fit_model() (R/model.R); the FE robustness variants
 # are rebuilt with build_da() (R/tidy.R) from the enriched `fe_incidents`.
@@ -244,7 +244,7 @@ armed_tab <- mpv_incidents |>
 print(armed_tab)
 
 # ---- Section 8: second-round additions --------------------------------------
-usethis::ui_info("Second round: descriptives, context, sub-periods, agency FE...")
+usethis::ui_info("Second round: descriptives, context, sub-periods...")
 
 # (a) Table 2, Panel A: victims per observation over the common 2013-2021 window
 window_tab <- purrr::map_dfr(c("fe", "mpv", "shr"), \(s) {
@@ -368,37 +368,3 @@ no2021_tab <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
                  n = stats::nobs(m))
 })
 print(no2021_tab)
-
-# (g) agency fixed effects. Counties aggregate several reporting agencies, so
-# we also compare victims within the same agency and year. Only MPV records the
-# agency (ORI); the SHR victims are keyed to the same 9-digit ORI via LEAIC.
-counts_mpv_ori <- mpv_incidents |>
-  dplyr::count(ori9, year, race, sex, name = "mpv")
-da_ori <- counts_shr_ori |>
-  dplyr::filter(year >= 2013, year <= 2021) |>
-  dplyr::select(ori9, year, race, sex, shr) |>
-  dplyr::full_join(dplyr::filter(counts_mpv_ori, year >= 2013, year <= 2021),
-                   by = c("ori9", "year", "race", "sex")) |>
-  dplyr::mutate(
-    shr = dplyr::coalesce(shr, 0L),
-    race = forcats::fct_relevel(race, c("White", "Black", "Hispanic", "Unknown/Others")),
-    sex = forcats::fct_relevel(sex, c("Male", "Female", "Unknown/Others"))
-  )
-d_ori <- prep_model_data(da_ori, "mpv")
-m_ori <- fixest::feglm(
-  shr ~ i(race) + i(sex) | year + ori9, data = d_ori, offset = ~ log(ofs),
-  family = "poisson", vcov = ~ year + ori9
-)
-m_ori_sub <- fixest::feglm(
-  shr ~ i(race, sex) | year + ori9, data = d_ori, offset = ~ log(ofs),
-  family = "poisson", vcov = ~ year + ori9
-)
-m_cty <- fit_model(da_model_fips, offset_var = "mpv", type = "fips", family = "poisson")
-m_st <- fit_model(da_model_state, offset_var = "mpv", type = "state", family = "poisson")
-print(fixest::etable(list(state = m_st, county = m_cty, agency = m_ori), digits = 3))
-print(fixest::etable(m_ori_sub, digits = 3))
-cat("Agency sample:", nrow(d_ori), "prepared obs;",
-    dplyr::n_distinct(d_ori$ori9), "agencies;",
-    dplyr::n_distinct(d_ori$ori9[d_ori$shr > 0]), "with an SHR record;",
-    stats::nobs(m_ori), "estimation obs in",
-    length(unique(d_ori$ori9[fixest::obs(m_ori)])), "agencies\n")
