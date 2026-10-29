@@ -165,7 +165,7 @@ robustness and post-hoc analyses in the appendices. Every model goes through a
 single `fit_model()` path (`R/model.R`); the Fatal Encounters robustness variants
 are rebuilt with `build_da()` (`R/tidy.R`) from the enriched incident table.
 
-The script is organised in seven sections:
+The script is organised in eight sections:
 
 1. **Main tables**: race and sex main effects, and race-by-sex subgroup reporting
    rates, at county and state levels, against both benchmarks (paper Tables 3-4).
@@ -184,8 +184,15 @@ The script is organised in seven sections:
    effects, and female underreporting stratified by within-county reporting
    intensity.
 7. **Estimation-sample descriptives and armed context**: the four regression
-   samples (Table 2, Panel B) and the share of MPV victims recorded as unarmed by
-   race (Table 6).
+   samples and the share of MPV victims recorded as unarmed by race, as reported
+   in the first revision.
+8. **Second-round additions**: Table 2 recomputed on one consistent basis
+   (Panel A over the common 2013-2021 window; Panel B with units that record any
+   SHR victim and the observations that identify each model); the share of SHR
+   zeros that fall in county-years where the SHR records nobody; incident context
+   by race and by sex in MPV (unarmed, officer charged, officially ruled
+   justified; Table 6); demographic shares by source in the periods where the
+   sources overlap; and coefficients by sub-period (Table 11).
 
 Tables are printed with `fixest::etable()` and `tibble` summaries.
 

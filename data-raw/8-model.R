@@ -10,6 +10,9 @@ devtools::load_all()
 #   Section 5  FE force-filter and race-imputation robustness (appendix)
 #   Section 6  Role of the fixed effects: no-geo-FE and reporting-intensity strata
 #   Section 7  Estimation-sample descriptives and armed-vs-unarmed context
+#   Section 8  Second-round additions: descriptives over the common window,
+#              SHR zeros in silent county-years, incident context by race and
+#              sex, and coefficients by sub-period
 #
 # Every model goes through fit_model() (R/model.R); the FE robustness variants
 # are rebuilt with build_da() (R/tidy.R) from the enriched `fe_incidents`.
@@ -205,6 +208,8 @@ print(strata_tab)
 # ---- Section 7: estimation-sample descriptives and armed context ------------
 usethis::ui_info("Appendix: estimation-sample descriptives and armed context...")
 
+# Superseded by Section 8(b), which reports every column on one basis;
+# kept so the first-round Table 2 can still be reproduced as submitted.
 describe_panel <- function(da, bench, geo) {
   m <- fit_model(da, offset_var = bench, type = geo,
                  family = if (geo == "fips") "poisson" else "negbin")
@@ -237,3 +242,119 @@ armed_tab <- mpv_incidents |>
   dplyr::ungroup() |>
   dplyr::filter(armed == "Unarmed")
 print(armed_tab)
+
+# ---- Section 8: second-round additions --------------------------------------
+usethis::ui_info("Second round: descriptives, context, sub-periods...")
+
+# (a) Table 2, Panel A: victims per observation over the common 2013-2021 window
+window_tab <- purrr::map_dfr(c("fe", "mpv", "shr"), \(s) {
+  x <- da_model_fips |>
+    dplyr::filter(year >= 2013, year <= 2021) |>
+    dplyr::pull(s)
+  x <- x[!is.na(x) & x > 0]
+  tibble::tibble(source = toupper(s), obs_with_victims = length(x),
+                 victims = sum(x), mean = round(mean(x), 2),
+                 min = min(x), max = max(x))
+})
+print(window_tab)
+# unknown race and sex are explicit categories, not missing values
+print(dplyr::count(da_model_fips, race) |> dplyr::mutate(pct = round(100 * n / sum(n), 1)))
+print(dplyr::count(da_model_fips, sex) |> dplyr::mutate(pct = round(100 * n / sum(n), 1)))
+
+# (b) Table 2, Panel B on one consistent basis. Descriptives refer to the
+# prepared sample; `est_obs`/`est_units` are what identifies the model, after
+# the fixed effects absorb all-zero-SHR units and singletons.
+describe_panel2 <- function(da, bench, geo) {
+  m <- fit_model(da, offset_var = bench, type = geo,
+                 family = if (geo == "fips") "poisson" else "negbin")
+  d_all <- prep_model_data(da, bench)
+  e <- d_all[fixest::obs(m), ]
+  d <- d_all[!is.na(d_all[[geo]]), ]
+  tibble::tibble(
+    benchmark = toupper(bench), level = geo,
+    obs = nrow(d),
+    geo_units = dplyr::n_distinct(d[[geo]]),
+    units_any_shr = dplyr::n_distinct(d[[geo]][d$shr > 0]),
+    pct_shr_zero = round(100 * mean(d$shr == 0), 0),
+    mean_shr = round(mean(d$shr), 2),
+    mean_bench = round(mean(d$ofs), 2),
+    est_obs = nrow(e),
+    est_units = dplyr::n_distinct(e[[geo]])
+  )
+}
+panels2 <- dplyr::bind_rows(
+  describe_panel2(da_model_fips, "fe", "fips"),
+  describe_panel2(da_model_fips, "mpv", "fips"),
+  describe_panel2(da_model_state, "fe", "state"),
+  describe_panel2(da_model_state, "mpv", "state")
+)
+print(as.data.frame(panels2))
+
+# (c) how many SHR zeros sit in county-years where the SHR records nobody
+silent_zeros <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
+  d <- prep_model_data(da_model_fips, bench)
+  cy <- da_model_fips |>
+    dplyr::group_by(fips, year) |>
+    dplyr::summarise(shr_cy = sum(shr, na.rm = TRUE), .groups = "drop")
+  z <- dplyr::left_join(d, cy, by = c("fips", "year")) |>
+    dplyr::filter(shr == 0)
+  tibble::tibble(benchmark = toupper(bench), shr_zero_obs = nrow(z),
+                 in_silent_county_years = sum(z$shr_cy == 0),
+                 pct = round(100 * mean(z$shr_cy == 0), 1))
+})
+print(silent_zeros)
+
+# (d) incident context by race and by sex (MPV, 2013-2021): unarmed, officer
+# charged, and officially ruled justified. Extends the armed-context table.
+ctx <- mpv_incidents |>
+  dplyr::filter(year >= 2013, year <= 2021,
+                race != "Unknown/Others", sex != "Unknown/Others")
+ctx_summary <- function(d, by) {
+  d |>
+    dplyr::group_by(group = .data[[by]]) |>
+    dplyr::summarise(
+      victims = dplyr::n(),
+      pct_unarmed = round(100 * mean(armed == "Unarmed"), 1),
+      pct_charged = round(100 * mean(disposition == "Charged"), 1),
+      pct_justified = round(100 * mean(disposition == "Justified"), 1),
+      pct_pending_unknown = round(100 * mean(disposition %in% c("Pending", "Unknown")), 1),
+      pct_justified_of_resolved = round(100 * sum(disposition == "Justified") /
+        sum(disposition %in% c("Justified", "Charged")), 1),
+      .groups = "drop"
+    )
+}
+context_tab <- dplyr::bind_rows(ctx_summary(ctx, "race"), ctx_summary(ctx, "sex"))
+print(as.data.frame(context_tab))
+print(ctx_summary(dplyr::mutate(ctx, rs = paste(race, sex)), "rs"))
+
+# (e) demographic shares by source in the periods where sources overlap
+# (the numbers behind the reading of the race and sex trend figures)
+period_shares <- da_model_fips |>
+  dplyr::filter(race != "Unknown/Others", sex != "Unknown/Others", year >= 2000) |>
+  dplyr::mutate(period = cut(year, c(1999, 2006, 2012, 2016, 2021, 2024),
+    labels = c("2000-06", "2007-12", "2013-16", "2017-21", "2022-24"))) |>
+  dplyr::group_by(period) |>
+  dplyr::summarise(dplyr::across(c(shr, fe, mpv), list(
+    black = ~ round(100 * sum(.x[race == "Black"], na.rm = TRUE) / sum(.x, na.rm = TRUE), 1),
+    female = ~ round(100 * sum(.x[sex == "Female"], na.rm = TRUE) / sum(.x, na.rm = TRUE), 1)
+  )))
+print(period_shares)
+
+# (f) do the within-county gaps change over the window? Separate coefficients
+# for 2013-2016 and 2017-2021 (county Poisson).
+subperiod_tab <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
+  d <- prep_model_data(da_model_fips, bench) |>
+    dplyr::mutate(period = ifelse(year <= 2016, "2013-2016", "2017-2021"),
+                  black = as.integer(race == "Black"),
+                  hispanic = as.integer(race == "Hispanic"),
+                  female = as.integer(sex == "Female"))
+  m <- fixest::feglm(
+    shr ~ black:period + hispanic:period + female:period | year + fips,
+    data = d, offset = ~ log(ofs), family = "poisson", vcov = ~ year + fips
+  )
+  ct <- fixest::coeftable(m)
+  tibble::tibble(benchmark = toupper(bench), term = rownames(ct),
+                 estimate = round(ct[, 1], 3), se = round(ct[, 2], 3),
+                 p = round(ct[, 4], 3))
+})
+print(subperiod_tab, n = 20)

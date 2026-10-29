@@ -150,6 +150,10 @@
 #'   \item{race}{Victim race.}
 #'   \item{sex}{Victim sex.}
 #'   \item{armed}{`"Armed"`, `"Unarmed"`, `"Vehicle"`, or `"Unknown"`.}
+#'   \item{charged}{`TRUE` if an officer was charged with a crime over the death.}
+#'   \item{disposition}{Official disposition harmonized from MPV's free text:
+#'     `"Charged"`, `"Justified"` (justified or cleared by a prosecutor, grand
+#'     jury, or other reviewing body), `"Pending"`, or `"Unknown"`.}
 #' }
 #' @source Mapping Police Violence, 2025 release.
 #' @keywords datasets
