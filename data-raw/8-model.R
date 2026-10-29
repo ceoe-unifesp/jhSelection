@@ -12,7 +12,7 @@ devtools::load_all()
 #   Section 7  Estimation-sample descriptives and armed-vs-unarmed context
 #   Section 8  Second-round additions: descriptives over the common window,
 #              SHR zeros in silent county-years, incident context by race and
-#              sex, sub-period and 2021 checks
+#              sex, and coefficients by sub-period
 #
 # Every model goes through fit_model() (R/model.R); the FE robustness variants
 # are rebuilt with build_da() (R/tidy.R) from the enriched `fe_incidents`.
@@ -341,8 +341,7 @@ period_shares <- da_model_fips |>
 print(period_shares)
 
 # (f) do the within-county gaps change over the window? Separate coefficients
-# for 2013-2016 and 2017-2021 (county Poisson), and the main model without 2021,
-# the first year of the FBI's NIBRS-only collection.
+# for 2013-2016 and 2017-2021 (county Poisson).
 subperiod_tab <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
   d <- prep_model_data(da_model_fips, bench) |>
     dplyr::mutate(period = ifelse(year <= 2016, "2013-2016", "2017-2021"),
@@ -359,12 +358,3 @@ subperiod_tab <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
                  p = round(ct[, 4], 3))
 })
 print(subperiod_tab, n = 20)
-
-no2021_tab <- purrr::map_dfr(c("fe", "mpv"), \(bench) {
-  m <- fit_model(dplyr::filter(da_model_fips, year <= 2020), offset_var = bench,
-                 type = "fips", family = "poisson")
-  tibble::tibble(benchmark = toupper(bench), Black = coef_row(m, "Black"),
-                 Hispanic = coef_row(m, "Hispanic"), Female = coef_row(m, "Female"),
-                 n = stats::nobs(m))
-})
-print(no2021_tab)

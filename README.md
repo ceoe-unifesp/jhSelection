@@ -192,7 +192,7 @@ The script is organised in eight sections:
    zeros that fall in county-years where the SHR records nobody; incident context
    by race and by sex in MPV (unarmed, officer charged, officially ruled
    justified; Table 6); demographic shares by source in the periods where the
-   sources overlap; and coefficients by sub-period and without 2021 (Table 11).
+   sources overlap; and coefficients by sub-period (Table 11).
 
 Tables are printed with `fixest::etable()` and `tibble` summaries.
 
